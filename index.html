@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>指尖打字通 · 键盘指法练习与演示</title>
+<meta name="description" content="免费的键盘打字练习网页应用：分级指法课程、虚拟键盘按键高亮、双手手型实时演示、WPM 与准确率统计、薄弱键位分析。" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>⌨️</text></svg>" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">⌨</div>
+      <div class="brand-text">
+        <h1>指尖打字通</h1>
+        <p>Touch Typing Trainer · 键位与指法演示</p>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs" role="tablist" aria-label="练习模式">
+      <button class="tab is-active" data-tab="practice" role="tab">课程练习</button>
+      <button class="tab" data-tab="free" role="tab">自由练习</button>
+      <button class="tab" data-tab="demo" role="tab">指法演示</button>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnSound" title="音效开关" aria-label="音效开关">🔊</button>
+      <button class="icon-btn" id="btnSettings" title="设置" aria-label="设置">⚙️</button>
+      <button class="icon-btn" id="btnTheme" title="切换主题" aria-label="切换主题">🌙</button>
+    </div>
+  </header>
+
+  <div class="popover hidden" id="settingsPop" role="dialog" aria-label="设置">
+    <div class="popover-head"><h3>练习设置</h3></div>
+    <div class="popover-body">
+      <label class="switch"><input type="checkbox" id="setColorKeys" checked><span class="slider"></span><span class="switch-label">键盘按指法着色</span></label>
+      <label class="switch"><input type="checkbox" id="setShowNext" checked><span class="slider"></span><span class="switch-label">高亮下一个按键</span></label>
+      <label class="switch"><input type="checkbox" id="setShowHands" checked><span class="slider"></span><span class="switch-label">显示手型指法演示</span></label>
+      <label class="switch"><input type="checkbox" id="setStrict"><span class="slider"></span><span class="switch-label">严格模式（打错必须退格）</span></label>
+      <label class="switch"><input type="checkbox" id="setCaseSensitive" checked><span class="slider"></span><span class="switch-label">区分大小写（须用 Shift）</span></label>
+      <label class="switch"><input type="checkbox" id="setSoundOn" checked><span class="slider"></span><span class="switch-label">按键音效</span></label>
+    </div>
+    <p class="popover-note">设置会自动保存在本地浏览器中。</p>
+  </div>
+
+  <main class="layout">
+    <div class="col-main">
+
+      <!-- 课程练习 -->
+      <section class="panel source-view" id="view-practice">
+        <div class="panel-head">
+          <h2>课程练习</h2>
+          <div class="group-chips" id="groupChips"></div>
+        </div>
+        <div class="lesson-grid" id="lessonGrid"></div>
+      </section>
+
+      <!-- 自由练习 -->
+      <section class="panel source-view hidden" id="view-free">
+        <div class="panel-head">
+          <h2>自由练习</h2>
+          <div class="seg" id="freeModeSeg">
+            <button class="seg-btn is-active" data-mode="words">随机单词</button>
+            <button class="seg-btn" data-mode="tech">编程词汇</button>
+            <button class="seg-btn" data-mode="para">英文段落</button>
+            <button class="seg-btn" data-mode="custom">自定义文本</button>
+          </div>
+        </div>
+        <div class="free-body">
+          <div class="free-row" id="freeRowLen">
+            <label class="range-label" for="freeLen">长度 <b id="freeLenVal">40</b> 词</label>
+            <input type="range" id="freeLen" min="10" max="150" step="5" value="40" />
+            <button class="btn primary" id="btnGenerate">↻ 生成新文本</button>
+          </div>
+          <div class="free-row hidden" id="freeRowCustom">
+            <textarea id="freeText" rows="5" placeholder="把要练习的文字粘贴到这里，然后点击「使用这段文本」…"></textarea>
+            <button class="btn primary" id="btnUseCustom">✔ 使用这段文本</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 指法演示 -->
+      <section class="panel source-view hidden" id="view-demo">
+        <div class="panel-head">
+          <h2>指法演示</h2>
+          <span class="badge">自动播放 · 观察手指分工</span>
+        </div>
+        <div class="demo-controls">
+          <select id="demoSelect" aria-label="演示文本"></select>
+          <button class="btn primary" id="btnDemoPlay">▶ 播放</button>
+          <button class="btn ghost" id="btnDemoStop">■ 停止</button>
+          <label class="speed-label">速度
+            <input type="range" id="demoSpeed" min="30" max="320" step="10" value="120" />
+            <b id="demoSpeedVal">120</b> 字/分
+          </label>
+          <label class="chk"><input type="checkbox" id="demoLoop" checked /> 循环播放</label>
+        </div>
+
+        <div class="teach-grid">
+          <article class="teach-card">
+            <h3>🪑 坐姿</h3>
+            <ul>
+              <li>身体正对键盘，屏幕与眼睛保持一臂距离。</li>
+              <li>腰背挺直，双脚平放地面，肩膀放松下沉。</li>
+              <li>手腕悬空或轻搭腕托，<b>不要压在桌沿</b>。</li>
+              <li>肘部约呈 90°，前臂与键盘基本平行。</li>
+            </ul>
+          </article>
+          <article class="teach-card">
+            <h3>✋ 手型与支点</h3>
+            <ul>
+              <li>手指自然弯曲，像轻握一个鸡蛋。</li>
+              <li>左手四指放在 <b>A S D F</b>，右手放在 <b>J K L ;</b>。</li>
+              <li><b>F</b> 和 <b>J</b> 上有小凸起，用食指触摸定位，不看键盘也能回到基准键。</li>
+              <li>两个拇指轻轻搭在空格键上。</li>
+              <li>击键后手指立即弹回基准键位。</li>
+            </ul>
+          </article>
+          <article class="teach-card">
+            <h3>🎯 八指分工</h3>
+            <ul>
+              <li>每根手指负责一列斜向的按键，颜色与下方键盘一致。</li>
+              <li>食指负责两列（如左手 <b>F/G/R/T/V/B</b>）。</li>
+              <li>小指负责所有功能键：Shift、Ctrl、Tab、Enter。</li>
+              <li>需要 Shift 时，用<b>另一只手</b>的小指按住。</li>
+              <li>空格键由空闲手的拇指敲击。</li>
+            </ul>
+          </article>
+          <article class="teach-card">
+            <h3>📈 练习方法</h3>
+            <ul>
+              <li>先求<b>准确</b>，再求速度；错误率低于 3% 再提速。</li>
+              <li>每天 15–20 分钟，比一次练两小时更有效。</li>
+              <li>全程<b>不看键盘</b>，看屏幕上的文字与手型提示。</li>
+              <li>关注「薄弱键位」面板，针对红键单独加练。</li>
+              <li>连续三次达标后再进入下一课。</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- 打字台 -->
+      <section class="panel stage-panel" id="stagePanel">
+        <div class="stage-head">
+          <div class="stage-title">
+            <h2 id="stageTitle">准备开始</h2>
+            <div class="focus-keys" id="focusKeys"></div>
+          </div>
+          <div class="stage-actions">
+            <button class="btn ghost" id="btnRestart" title="重新开始 (Ctrl+Enter)">↺ 重来</button>
+            <button class="btn ghost" id="btnPrev" title="上一课 (Alt+←)">‹</button>
+            <button class="btn ghost" id="btnNext" title="下一课 (Alt+→)">›</button>
+          </div>
+        </div>
+
+        <div class="stats" id="statsBar">
+          <div class="stat"><span class="stat-label">速度</span><span class="stat-value" id="statWpm">0</span><span class="stat-unit">WPM</span></div>
+          <div class="stat"><span class="stat-label">准确率</span><span class="stat-value" id="statAcc">100</span><span class="stat-unit">%</span></div>
+          <div class="stat"><span class="stat-label">用时</span><span class="stat-value" id="statTime">0</span><span class="stat-unit">秒</span></div>
+          <div class="stat"><span class="stat-label">错误</span><span class="stat-value" id="statErr">0</span><span class="stat-unit">次</span></div>
+          <div class="stat"><span class="stat-label">进度</span><span class="stat-value" id="statProg">0</span><span class="stat-unit">%</span></div>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+        <div class="text-display" id="textDisplay" tabindex="0" aria-label="练习文本">
+          <div class="text-content" id="textContent"></div>
+          <div class="start-hint" id="startHint">
+            <span>点击此处开始</span>
+            <small>把左手放在 <b>A S D F</b>、右手放在 <b>J K L ;</b> 上，然后照着高亮提示打字</small>
+          </div>
+        </div>
+
+        <div class="keyboard-wrap">
+          <div class="keyboard" id="keyboard"></div>
+        </div>
+
+        <div class="stage-foot">
+          <span id="imeHint">提示：请切换到英文输入法；若开启了大写锁定会给出提醒。</span>
+          <span class="shortcuts">Ctrl+Enter 重来 · Alt+←/→ 切换课程 · Esc 关闭弹窗</span>
+        </div>
+      </section>
+    </div>
+
+    <aside class="col-side">
+      <section class="panel hands-panel" id="handsPanel">
+        <div class="panel-head">
+          <h2>手型演示</h2>
+          <span class="badge" id="handBadge">待命</span>
+        </div>
+        <div class="hands" id="hands"></div>
+        <div class="next-key" id="nextKey">
+          <div class="next-char" id="nextChar">·</div>
+          <div class="next-info">
+            <div class="next-code" id="nextCode">等待开始</div>
+            <div class="next-finger" id="nextFinger">—</div>
+          </div>
+        </div>
+        <div class="finger-legend" id="fingerLegend"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>薄弱键位</h2>
+          <button class="link-btn" id="btnResetStats" title="清空累计统计">重置</button>
+        </div>
+        <div class="weak-keys" id="weakKeys"><p class="empty">还没有数据，先完成一次练习吧。</p></div>
+        <div class="mini-heatmap" id="heatmap"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>我的记录</h2></div>
+        <div class="records" id="records"><p class="empty">暂无记录。</p></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span>指尖打字通 · 纯前端本地运行，所有数据只保存在你的浏览器里。</span>
+  </footer>
+</div>
+
+<!-- 成绩弹窗 -->
+<div class="modal-backdrop hidden" id="resultModal" role="dialog" aria-modal="true" aria-label="练习成绩">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="resultTitle">练习完成！</h3>
+      <button class="icon-btn" id="btnCloseModal" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="result-grid">
+        <div class="result-card big"><span id="resWpm">0</span><small>WPM 速度</small></div>
+        <div class="result-card"><span id="resAcc">0%</span><small>准确率</small></div>
+        <div class="result-card"><span id="resTime">0s</span><small>用时</small></div>
+        <div class="result-card"><span id="resChars">0/0</span><small>正确字符</small></div>
+      </div>
+      <div class="result-note" id="resNote"></div>
+      <div class="result-errors">
+        <h4>本课易错键位</h4>
+        <div class="weak-keys" id="resWeakKeys"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="btnAgain">↺ 再练一次</button>
+      <button class="btn primary" id="btnNextLesson">下一课 ›</button>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="padding:24px;font-family:sans-serif">本应用需要启用 JavaScript。</p></noscript>
+
+<script src="js/data.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/hands.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/demo.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
